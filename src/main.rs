@@ -171,18 +171,18 @@ fn main() {
     let object = Object::read("data/cessna.obj").unwrap();
     //let object = Object::read("data/diamond.obj").unwrap();
 
-    let mut dz = 0.0;
+    let mut forward = 0.0;
     let mut dry = 0.0;
-    let mut camera_position = Point3::new(0.0, 0.0, 1.0);
-    let mut camera_orientation = Vector3::new(0.0, 0.0, 1.0);
+    let mut camera_position = Point3::new(0.0_f64, 0.0, 1.0);
+    let mut camera_orientation = Vector3::new(0.0_f64, 0.0, 1.0);
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
 
         if let Some(Button::Keyboard(key)) = e.press_args() {
             match key {
-                Key::Up => { dz = 1.0; }
-                Key::Down => { dz = -1.0; }
+                Key::Up => { forward = 1.0; }
+                Key::Down => { forward = -1.0; }
                 Key::Left => { dry = 1.0; }
                 Key::Right => { dry = -1.0; }
                 _ => {},
@@ -192,15 +192,17 @@ fn main() {
         if let Some(button) = e.release_args() {
             match button {
                 Button::Keyboard(Key::Up) |
-                Button::Keyboard(Key::Down) => { dz = 0.0; },
+                Button::Keyboard(Key::Down) => { forward = 0.0; },
                 Button::Keyboard(Key::Left) |
                 Button::Keyboard(Key::Right) => { dry = 0.0; },
                 _ => { },
             }
         }
 
-        camera_position.z += dz;
         camera_orientation.y += dry;
+        camera_position.x += forward * camera_orientation.y.to_radians().sin();
+        camera_position.z -= forward * camera_orientation.y.to_radians().cos();
+        println!("position: {:?}, orientation: {:?}", camera_position, camera_orientation);
 
         if let Some(args) = e.idle_args() {
 
