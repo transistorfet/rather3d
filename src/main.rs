@@ -3,8 +3,8 @@ use std::io::{self, BufRead, BufReader};
 use std::f64::consts::PI;
 
 use nalgebra::{Point3, Vector3, Vector4, Matrix4, Perspective3};
-use piston_window::{PistonWindow, WindowSettings, clear, Line, DrawState, EventLoop, Events, EventSettings, RenderEvent, Button, Key, PressEvent, ReleaseEvent, IdleEvent};
-use opengl_graphics::{ GlGraphics, OpenGL };
+use piston_window::{PistonWindow, WindowSettings, clear, Line, Text, DrawState, EventLoop, Events, EventSettings, RenderEvent, Button, Key, PressEvent, ReleaseEvent, IdleEvent, TextureSettings};
+use opengl_graphics::{ GlGraphics, OpenGL, GlyphCache };
 
 #[derive(Clone, Debug)]
 struct Object {
@@ -63,8 +63,8 @@ impl Object {
         //let perspective_from_camera = Perspective3::new(SIZE_X / SIZE_Y, 3.14 / 4.0, 1.0, 10000.0).to_homogeneous();
 
         let camera_from_world =
-            Self::translate(camera_position)
-            * Self::rotate(camera_orientation);
+            Self::rotate(camera_orientation)
+            * Self::translate(-1.0 * camera_position);
 
         self.points
             .iter()
@@ -171,18 +171,21 @@ fn main() {
     let object = Object::read("data/cessna.obj").unwrap();
     //let object = Object::read("data/diamond.obj").unwrap();
 
+    let font = "/usr/share/fonts/truetype/agave/agave-r-autohinted.ttf";
+    let mut glyphs = GlyphCache::new(font, (), TextureSettings::new()).unwrap();
+
     let mut forward = 0.0;
     let mut dry = 0.0;
-    let mut camera_position = Point3::new(0.0_f64, 0.0, 1.0);
-    let mut camera_orientation = Vector3::new(0.0_f64, 0.0, 1.0);
+    let mut camera_position = Point3::new(0.0_f64, 0.0, 0.0);
+    let mut camera_orientation = Vector3::new(0.0_f64, 0.0, 0.0);
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
 
         if let Some(Button::Keyboard(key)) = e.press_args() {
             match key {
-                Key::Up => { forward = 1.0; }
-                Key::Down => { forward = -1.0; }
+                Key::Up => { forward = -1.0; }
+                Key::Down => { forward = 1.0; }
                 Key::Left => { dry = 1.0; }
                 Key::Right => { dry = -1.0; }
                 _ => {},
@@ -199,10 +202,10 @@ fn main() {
             }
         }
 
-        camera_orientation.y += dry;
+        camera_orientation.y -= dry;
         camera_position.x += forward * camera_orientation.y.to_radians().sin();
         camera_position.z -= forward * camera_orientation.y.to_radians().cos();
-        println!("position: {:?}, orientation: {:?}", camera_position, camera_orientation);
+        //println!("position: {:?}, orientation: {:?}", camera_position, camera_orientation);
 
         if let Some(args) = e.idle_args() {
 
@@ -211,6 +214,9 @@ fn main() {
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 println!("start drawing");
+
+                Text::new_color(BLUE, 12)
+                    .draw_pos(&format!("position: {:?}, orientation: {:?}", camera_position, camera_orientation), [0.0, 12.0].into(), &mut glyphs, &c.draw_state, c.transform, g);
 
                 clear([1.0; 4], g);
                 //rectangle(BLUE,
