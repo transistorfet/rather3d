@@ -3,8 +3,11 @@ use std::io::{self, BufRead, BufReader};
 use std::f64::consts::PI;
 
 use nalgebra::{Point3, Vector3, Vector4, Matrix4, Perspective3};
-use piston_window::{PistonWindow, WindowSettings, clear, Line, Text, DrawState, EventLoop, Events, EventSettings, RenderEvent, Button, Key, PressEvent, ReleaseEvent, MouseRelativeEvent, ResizeEvent, IdleEvent, TextureSettings};
-use opengl_graphics::{ GlGraphics, OpenGL, GlyphCache };
+use piston_window::{
+    PistonWindow, WindowSettings, clear, Line, Text, DrawState, EventLoop, Events, EventSettings, RenderEvent, Button, Key,
+    PressEvent, ReleaseEvent, MouseRelativeEvent, ResizeEvent, IdleEvent, TextureSettings,
+};
+use opengl_graphics::{GlGraphics, OpenGL, GlyphCache};
 
 #[derive(Clone, Debug)]
 struct Object {
@@ -26,17 +29,14 @@ impl Object {
             if let Some(line_type) = words.next() {
                 match line_type {
                     "v" => {
-                        let point: Point3<f64> = Vector3::from_iterator(words
-                            .map(|w| str::parse::<f64>(w).unwrap())).into();
+                        let point: Point3<f64> = Vector3::from_iterator(words.map(|w| str::parse::<f64>(w).unwrap())).into();
                         points.push(point);
                     },
                     "f" => {
-                        let face: Vec<usize> = words
-                            .map(|w| str::parse::<usize>(w).unwrap())
-                            .collect();
+                        let face: Vec<usize> = words.map(|w| str::parse::<usize>(w).unwrap()).collect();
                         faces.push(face);
                     },
-                    _ => { },
+                    _ => {},
                 }
             }
         }
@@ -47,7 +47,12 @@ impl Object {
         })
     }
 
-    pub fn project(&self, camera_position: Point3<f64>, camera_orientation: Vector3<f64>, window_size: [f64; 2]) -> Vec<Point3<f64>> {
+    pub fn project(
+        &self,
+        camera_position: Point3<f64>,
+        camera_orientation: Vector3<f64>,
+        window_size: [f64; 2],
+    ) -> Vec<Point3<f64>> {
         let object_position = Point3::new(0.0, 0.0, 100.0);
 
         let scale = Self::scale(1.0);
@@ -62,20 +67,16 @@ impl Object {
         //let perspective_from_camera = Perspective3::new(16.0 / 9.0, 3.14 / 4.0, 1.0, 10000.0).to_homogeneous();
         //let perspective_from_camera = Perspective3::new(window_size[0] / window_size[1], 3.14 / 4.0, 1.0, 10000.0).to_homogeneous();
 
-        let camera_from_world =
-            Self::rotate(camera_orientation)
-            * Self::translate(-1.0 * camera_position);
+        let camera_from_world = Self::rotate(camera_orientation) * Self::translate(-1.0 * camera_position);
 
         self.points
             .iter()
             .map(|point| point.to_homogeneous())
             .map(|point| perspective_from_camera * camera_from_world * world_from_object * point)
             .map(|point| Point3::from_homogeneous(point).unwrap())
-
             //.map(|point| translate * scale * rotate_y * rotate_z * point.to_homogeneous())
             //.map(|point| Point3::new(point[0], point[1], point[2]))
             //.map(|point| perspective_from_camera.project_point(&point))
-
             .collect()
     }
 
@@ -157,16 +158,15 @@ fn get_point(points: &[Point3<f64>], face: usize, window_size: [f64; 2]) -> ([f6
     (
         [
             ((points[face - 1][0] + 1.0) / 2.0) * window_size[0],
-            ((points[face - 1][1] + 1.0) / 2.0) * window_size[1]
+            ((points[face - 1][1] + 1.0) / 2.0) * window_size[1],
         ],
-        points[face - 1][2] < 1.0
+        points[face - 1][2] < 1.0,
     )
 }
 
 fn main() {
     let opengl = OpenGL::V3_2;
-    let mut window: PistonWindow =
-        WindowSettings::new("Hello Piston!", [SIZE_X, SIZE_Y])
+    let mut window: PistonWindow = WindowSettings::new("Hello Piston!", [SIZE_X, SIZE_Y])
         .exit_on_esc(true)
         .graphics_api(opengl)
         .build()
@@ -189,7 +189,6 @@ fn main() {
 
     let mut events = Events::new(EventSettings::new());
     while let Some(e) = events.next(&mut window) {
-
         e.resize(|args| {
             window_size = args.window_size;
         });
@@ -202,21 +201,31 @@ fn main() {
 
         if let Some(Button::Keyboard(key)) = e.press_args() {
             match key {
-                Key::Up => { forward = -1.0; }
-                Key::Down => { forward = 1.0; }
-                Key::Left => { dry = 1.0; }
-                Key::Right => { dry = -1.0; }
+                Key::Up => {
+                    forward = -1.0;
+                },
+                Key::Down => {
+                    forward = 1.0;
+                },
+                Key::Left => {
+                    dry = 1.0;
+                },
+                Key::Right => {
+                    dry = -1.0;
+                },
                 _ => {},
             }
         }
 
         if let Some(button) = e.release_args() {
             match button {
-                Button::Keyboard(Key::Up) |
-                Button::Keyboard(Key::Down) => { forward = 0.0; },
-                Button::Keyboard(Key::Left) |
-                Button::Keyboard(Key::Right) => { dry = 0.0; },
-                _ => { },
+                Button::Keyboard(Key::Up) | Button::Keyboard(Key::Down) => {
+                    forward = 0.0;
+                },
+                Button::Keyboard(Key::Left) | Button::Keyboard(Key::Right) => {
+                    dry = 0.0;
+                },
+                _ => {},
             }
         }
 
@@ -225,20 +234,32 @@ fn main() {
         camera_position.z -= forward * camera_orientation.y.to_radians().cos();
         //println!("position: {:?}, orientation: {:?}", camera_position, camera_orientation);
 
-        if let Some(args) = e.idle_args() {
-
-        }
+        if let Some(args) = e.idle_args() {}
 
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 println!("start drawing");
 
                 Text::new_color(BLUE, 12)
-                    .draw_pos(&format!("mouse: {:?} {:?}", cursor[0], cursor[1]), [0.0, 24.0].into(), &mut glyphs, &c.draw_state, c.transform, g)
+                    .draw_pos(
+                        &format!("mouse: {:?} {:?}", cursor[0], cursor[1]),
+                        [0.0, 24.0].into(),
+                        &mut glyphs,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    )
                     .unwrap();
 
                 Text::new_color(BLUE, 12)
-                    .draw_pos(&format!("position: {:?}, orientation: {:?}", camera_position, camera_orientation), [0.0, 12.0].into(), &mut glyphs, &c.draw_state, c.transform, g)
+                    .draw_pos(
+                        &format!("position: {:?}, orientation: {:?}", camera_position, camera_orientation),
+                        [0.0, 12.0].into(),
+                        &mut glyphs,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    )
                     .unwrap();
 
                 clear([1.0; 4], g);
@@ -267,12 +288,9 @@ fn main() {
 
                     //println!("{:?} {:?} {:?}", p1, p2, p3);
 
-                    Line::new(BLUE, 0.2)
-                        .draw_from_to(p1, p2, &c.draw_state, c.transform, g);
-                    Line::new(BLUE, 0.2)
-                        .draw_from_to(p2, p3, &c.draw_state, c.transform, g);
-                    Line::new(BLUE, 0.2)
-                        .draw_from_to(p3, p1, &c.draw_state, c.transform, g);
+                    Line::new(BLUE, 0.2).draw_from_to(p1, p2, &c.draw_state, c.transform, g);
+                    Line::new(BLUE, 0.2).draw_from_to(p2, p3, &c.draw_state, c.transform, g);
+                    Line::new(BLUE, 0.2).draw_from_to(p3, p1, &c.draw_state, c.transform, g);
                 }
             });
         }
