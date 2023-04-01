@@ -80,8 +80,8 @@ impl Object {
             .collect()
     }
 
+    #[rustfmt::skip]
     pub fn scale(scale: f64) -> Matrix4<f64> {
-        #[rustfmt::skip]
         Matrix4::new(
             scale,   0.0,   0.0, 0.0,
               0.0, scale,   0.0, 0.0,
@@ -90,8 +90,8 @@ impl Object {
         )
     }
 
+    #[rustfmt::skip]
     pub fn translate(point: Point3<f64>) -> Matrix4<f64> {
-        #[rustfmt::skip]
         Matrix4::new(
               1.0,   0.0,   0.0,   point[0],
               0.0,   1.0,   0.0,   point[1],
@@ -104,9 +104,9 @@ impl Object {
         Self::rotate_x(vector[0]) * Self::rotate_y(vector[1]) * Self::rotate_z(vector[2])
     }
 
+    #[rustfmt::skip]
     pub fn rotate_x(x: f64) -> Matrix4<f64> {
         let x = x * PI / 180.0;
-        #[rustfmt::skip]
         Matrix4::new(
             1.0,        0.0,     0.0, 0.0,
             0.0,    x.cos(), x.sin(), 0.0,
@@ -115,9 +115,9 @@ impl Object {
         )
     }
 
+    #[rustfmt::skip]
     pub fn rotate_y(y: f64) -> Matrix4<f64> {
         let y = y * PI / 180.0;
-        #[rustfmt::skip]
         Matrix4::new(
                y.cos(),     0.0, y.sin(), 0.0,
                    0.0,     1.0,     0.0, 0.0,
@@ -126,9 +126,9 @@ impl Object {
         )
     }
 
+    #[rustfmt::skip]
     pub fn rotate_z(z: f64) -> Matrix4<f64> {
         let z = z * PI / 180.0;
-        #[rustfmt::skip]
         Matrix4::new(
                z.cos(), z.sin(), 0.0, 0.0,
             -(z.sin()), z.cos(), 0.0, 0.0,
@@ -137,9 +137,9 @@ impl Object {
         )
     }
 
+    #[rustfmt::skip]
     pub fn perspective_transform_fov(fov: f64, aspect: f64, n: f64, f: f64) -> Matrix4<f64> {
         let e = 1.0 / (fov / 2.0).tan();
-        #[rustfmt::skip]
         Matrix4::new(
           e / aspect,   0.0,                 0.0,                       0.0,
                  0.0,   e,                   0.0,                       0.0,
